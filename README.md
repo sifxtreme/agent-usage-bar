@@ -26,7 +26,7 @@ Claude Code statusline ──▶ hook writes ~/.claude/usage-bar/usage.json ─�
 ## Install (native app — recommended)
 
 ```bash
-git clone https://github.com/asifahmed/claude-usage-bar
+git clone https://github.com/sifxtreme/claude-usage-bar
 cd claude-usage-bar
 npm link                     # puts `claude-usage-bar` on your PATH (the writer)
 ./native/install.sh          # compiles the app + installs a LaunchAgent (starts now + at login)
