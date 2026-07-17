@@ -4,10 +4,14 @@
 # <xbar.author>Asif Ahmed</xbar.author>
 # <xbar.desc>5-hour and weekly Claude Code usage limits in the menu bar. Reads a snapshot written by the official statusline payload — no credentials.</xbar.desc>
 # <xbar.dependencies>node,claude-usage-bar</xbar.dependencies>
+# <swiftbar.refreshOnOpen>true</swiftbar.refreshOnOpen>
 #
-# SwiftBar/xbar plugin. The ".1h." in the filename sets a 1-hour refresh; the
-# dropdown's "Refresh" item forces an on-demand update. This wrapper just calls
-# `claude-usage-bar render`, which reads the local snapshot (no network).
+# SwiftBar/xbar plugin. Refreshes three ways:
+#   - hourly      (the ".1h." in the filename)
+#   - on click    (<swiftbar.refreshOnOpen> re-reads the snapshot when you open the menu)
+#   - on demand   (the dropdown's "Refresh" item)
+# This wrapper just calls `claude-usage-bar render`, which reads the local
+# snapshot (no network, no credentials).
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin:$PATH"
 
