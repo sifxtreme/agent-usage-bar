@@ -61,6 +61,32 @@ test('custom font + size honored', () => {
   assert.match(bar, /size=12/);
 });
 
+test('stack style emits a templateImage from the two rows', () => {
+  /** @type {string[][]} */
+  const calls = [];
+  /** @param {string} l1 @param {string} l2 */
+  const buildImage = (l1, l2) => {
+    calls.push([l1, l2]);
+    return 'FAKEB64';
+  };
+  const out = renderSwiftBar(snap({ fiveHour: 7, sevenDay: 100 }), {
+    now: NOW,
+    env: { CLAUDE_USAGE_BAR_STYLE: 'stack' },
+    buildImage,
+  });
+  assert.equal(firstLine(out), '| templateImage=FAKEB64');
+  assert.deepEqual(calls[0], ['5h   7%', 'wk 100%']); // right-aligned percentages
+});
+
+test('stack style falls back to text when the image cannot be built', () => {
+  const out = renderSwiftBar(snap(), {
+    now: NOW,
+    env: { CLAUDE_USAGE_BAR_STYLE: 'stack' },
+    buildImage: () => null,
+  });
+  assert.match(firstLine(out), /^5H9 WK22 \|/);
+});
+
 test('missing window shows --', () => {
   const out = renderSwiftBar(snap({ fiveHour: null }), { now: NOW, env: {} });
   assert.match(firstLine(out), /^5H-- WK22 /);

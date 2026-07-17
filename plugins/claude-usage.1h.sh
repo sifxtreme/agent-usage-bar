@@ -15,6 +15,11 @@
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin:$PATH"
 
+# Stacked two-row menu-bar image (needs ImageMagick `magick`); falls back to a
+# single text line automatically if magick is missing. Override by exporting
+# CLAUDE_USAGE_BAR_STYLE=numbers (or bars) before SwiftBar launches.
+export CLAUDE_USAGE_BAR_STYLE="${CLAUDE_USAGE_BAR_STYLE:-stack}"
+
 # Resolve the CLI: explicit override, then PATH, then a common repo checkout.
 BIN="${CLAUDE_USAGE_BAR_BIN:-}"
 if [ -z "$BIN" ]; then

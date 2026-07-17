@@ -8,6 +8,7 @@ import {
   barSegments,
 } from './constants.js';
 import { fmtPercent, fmtResetLocal, fmtAge } from './format.js';
+import { buildStackImage, stackLabel } from './stack-image.js';
 
 /**
  * Menu-bar text color. Default white (clean on a dark menu bar). Override with
@@ -44,8 +45,7 @@ function num(pct) {
 }
 
 /**
- * ASCII HP-meter gauge, e.g. "[##--]". ASCII-only so it stays inside the pixel
- * font's glyph set (block-drawing chars would fall back to another font).
+ * ASCII HP-meter gauge, e.g. "[##--]". ASCII-only so it stays inside any font.
  * @param {number | null} pct @param {number} segs
  */
 function bar(pct, segs) {
@@ -55,15 +55,44 @@ function bar(pct, segs) {
 }
 
 /**
- * Render the SwiftBar/xbar output for a snapshot. Menu-bar line is a compact,
- * white, pixel-font (Press Start 2P) HUD; the dropdown stays readable (Menlo).
+ * The menu-bar line (first block). Returns the `stack` image line when that
+ * style is active and the image builds; otherwise a single text line.
+ * @param {import('./snapshot.js').Snapshot} snap
+ * @param {boolean} stale
+ * @param {string | null} color
+ * @param {NodeJS.ProcessEnv} env
+ * @param {(l1: string, l2: string, env: NodeJS.ProcessEnv) => (string | null)} buildImage
+ */
+function menuBarLine(snap, stale, color, env, buildImage) {
+  const staleMark = stale ? ' *' : '';
+
+  if (menuStyle(env) === 'stack') {
+    const img = buildImage(
+      stackLabel('5h', snap.fiveHour),
+      stackLabel('wk', snap.sevenDay),
+      env,
+    );
+    // Empty title so only the two-row image shows in the menu bar.
+    if (img) return `| templateImage=${img}`;
+    // magick missing/failed — fall through to text so the bar never goes blank.
+  }
+
+  const segs = barSegments(env);
+  const five = menuStyle(env) === 'bars' ? bar(snap.fiveHour, segs) : num(snap.fiveHour);
+  const seven = menuStyle(env) === 'bars' ? bar(snap.sevenDay, segs) : num(snap.sevenDay);
+  return `5H${five} WK${seven}${staleMark} | ${menuAttrs(color, env)}`;
+}
+
+/**
+ * Render the SwiftBar/xbar output for a snapshot.
  * @param {import('./snapshot.js').Snapshot | null} snap
- * @param {{ now?: number, env?: NodeJS.ProcessEnv }} [opts]
+ * @param {{ now?: number, env?: NodeJS.ProcessEnv, buildImage?: (l1: string, l2: string, env: NodeJS.ProcessEnv) => (string | null) }} [opts]
  * @returns {string}
  */
 export function renderSwiftBar(snap, opts = {}) {
   const env = opts.env ?? process.env;
   const now = opts.now ?? Date.now();
+  const buildImage = opts.buildImage ?? buildStackImage;
   const lines = [];
 
   if (!snap) {
@@ -81,12 +110,7 @@ export function renderSwiftBar(snap, opts = {}) {
   const worst = Math.max(snap.fiveHour ?? 0, snap.sevenDay ?? 0);
   const color = menuBarColor(worst, stale, env);
 
-  const segs = barSegments(env);
-  const five = menuStyle(env) === 'bars' ? bar(snap.fiveHour, segs) : num(snap.fiveHour);
-  const seven = menuStyle(env) === 'bars' ? bar(snap.sevenDay, segs) : num(snap.sevenDay);
-  const staleMark = stale ? ' *' : '';
-
-  lines.push(`5H${five} WK${seven}${staleMark} | ${menuAttrs(color, env)}`);
+  lines.push(menuBarLine(snap, stale, color, env, buildImage));
   lines.push('---');
   lines.push(`CLAUDE CODE USAGE · updated ${fmtAge(age)} | size=11 color=${COLORS.dim}`);
   if (stale) {

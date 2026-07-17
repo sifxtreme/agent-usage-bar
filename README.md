@@ -63,6 +63,20 @@ All via environment variables:
 | `CLAUDE_USAGE_BAR_SNAPSHOT` | `~/.claude/usage-bar/usage.json` | Where the snapshot is stored |
 | `CLAUDE_USAGE_BAR_STALE_MINUTES` | `180` | Age after which the bar is marked stale |
 | `CLAUDE_USAGE_BAR_BIN` | (auto) | Explicit CLI path for the SwiftBar plugin |
+| `CLAUDE_USAGE_BAR_STYLE` | `numbers` | `numbers` (`5H18 WK23`), `bars` (`5H[##-] WK[#--]`), or `stack` (two rows) |
+| `CLAUDE_USAGE_BAR_COLOR` | `white` | Any SwiftBar color, or `auto` to let the menu bar decide |
+| `CLAUDE_USAGE_BAR_ALERT_COLOR` | (off) | If set, text turns red when a limit hits 80% |
+| `CLAUDE_USAGE_BAR_FONT` / `_FONT_SIZE` | `Menlo` / `11` | Menu-bar font (text styles) |
+| `CLAUDE_USAGE_BAR_FONT_SIZE`… | | see above |
+
+### Menu-bar styles
+
+- **`numbers`** (default) — compact single line, `5H18 WK23`.
+- **`bars`** — ASCII HP meters, `5H[##--] WK[#---]`.
+- **`stack`** — the two percentages on **two rows** (`5h 18%` / `wk 23%`), rendered as a
+  template image so it auto-colors to your menu bar. **Requires [ImageMagick](https://imagemagick.org)**
+  (`brew install imagemagick`); without it, `stack` falls back to the `numbers` line automatically.
+  The bundled plugin defaults to `stack`.
 
 Refresh cadence is the plugin filename: `claude-usage.1h.sh` = hourly. Rename to `.15m.sh`, `.30m.sh`, etc. The dropdown **Refresh** item forces an update any time.
 
