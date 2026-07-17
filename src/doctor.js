@@ -20,7 +20,7 @@ export function runDoctor(deps = {}) {
   const log = deps.log ?? ((s) => console.log(s));
   let problems = 0;
 
-  log('claude-usage-bar doctor\n');
+  log('agent-usage-bar doctor\n');
 
   // 1) statusLine hook configured?
   const configDir = env.CLAUDE_CONFIG_DIR?.trim() || path.join(os.homedir(), '.claude');
@@ -29,7 +29,7 @@ export function runDoctor(deps = {}) {
     try {
       const cfg = JSON.parse(fs.readFileSync(path.join(configDir, name), 'utf8'));
       const cmd = cfg?.statusLine?.command;
-      if (typeof cmd === 'string' && cmd.includes('claude-usage-bar')) hookConfigured = true;
+      if (typeof cmd === 'string' && cmd.includes('agent-usage-bar')) hookConfigured = true;
     } catch {
       /* file may not exist */
     }
@@ -39,7 +39,7 @@ export function runDoctor(deps = {}) {
   } else {
     problems++;
     log(`${BAD} statusLine hook NOT found in ${configDir}/settings.json`);
-    log('    Add:  "statusLine": { "type": "command", "command": "claude-usage-bar hook" }');
+    log('    Add:  "statusLine": { "type": "command", "command": "agent-usage-bar hook" }');
   }
 
   // 2) snapshot present + fresh?
@@ -56,7 +56,7 @@ export function runDoctor(deps = {}) {
   }
 
   // 3) A reader is installed — the native menu-bar app OR SwiftBar/xbar.
-  const nativeAgent = path.join(os.homedir(), 'Library/LaunchAgents/com.claude-usage-bar.menubar.plist');
+  const nativeAgent = path.join(os.homedir(), 'Library/LaunchAgents/com.agent-usage-bar.menubar.plist');
   if (fs.existsSync(nativeAgent)) {
     log(`${OK} native menu-bar app installed (LaunchAgent present)`);
   } else if (fs.existsSync('/Applications/SwiftBar.app')) {

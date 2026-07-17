@@ -1,10 +1,10 @@
 {
-  "name": "claude-usage-bar",
+  "name": "agent-usage-bar",
   "version": "0.1.0",
   "description": "macOS menu-bar indicator for your Claude Code 5-hour and weekly usage limits. Reads the official statusline rate-limit payload — no credentials, no undocumented APIs.",
   "type": "module",
   "bin": {
-    "claude-usage-bar": "bin/claude-usage-bar.js"
+    "agent-usage-bar": "bin/agent-usage-bar.js"
   },
   "files": [
     "bin/",
@@ -38,6 +38,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sifxtreme/claude-usage-bar"
+    "url": "https://github.com/sifxtreme/agent-usage-bar"
   }
 }

@@ -12,15 +12,15 @@ import { buildStackImage, stackLabel } from './stack-image.js';
 
 /**
  * Menu-bar text color. Default white (clean on a dark menu bar). Override with
- * CLAUDE_USAGE_BAR_COLOR ("auto" lets the menu bar pick). Opt into
- * red-when-critical with CLAUDE_USAGE_BAR_ALERT_COLOR.
+ * AGENT_USAGE_BAR_COLOR ("auto" lets the menu bar pick). Opt into
+ * red-when-critical with AGENT_USAGE_BAR_ALERT_COLOR.
  * @param {number} worst @param {boolean} stale @param {NodeJS.ProcessEnv} env
  * @returns {string | null} null omits the color attribute (adaptive)
  */
 function menuBarColor(worst, stale, env) {
-  const override = env.CLAUDE_USAGE_BAR_COLOR?.trim();
+  const override = env.AGENT_USAGE_BAR_COLOR?.trim();
   if (override) return override.toLowerCase() === 'auto' ? null : override;
-  if (env.CLAUDE_USAGE_BAR_ALERT_COLOR && !stale && worst >= THRESHOLDS.red) {
+  if (env.AGENT_USAGE_BAR_ALERT_COLOR && !stale && worst >= THRESHOLDS.red) {
     return COLORS.red;
   }
   return 'white';
@@ -101,7 +101,7 @@ export function renderSwiftBar(snap, opts = {}) {
     lines.push('No usage snapshot yet | size=11 color=' + COLORS.dim);
     lines.push('Start a Claude Code session — its statusline writes the data. | size=11');
     lines.push('---');
-    lines.push('Run doctor | bash=claude-usage-bar param1=doctor terminal=true');
+    lines.push('Run doctor | bash=agent-usage-bar param1=doctor terminal=true');
     return lines.join('\n');
   }
 

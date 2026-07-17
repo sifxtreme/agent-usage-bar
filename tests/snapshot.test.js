@@ -12,7 +12,7 @@ import { SNAPSHOT_SCHEMA } from '../src/constants.js';
  */
 function tmpEnv(label) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `cub-${label}-`));
-  return { CLAUDE_USAGE_BAR_SNAPSHOT: path.join(dir, 'usage.json') };
+  return { AGENT_USAGE_BAR_SNAPSHOT: path.join(dir, 'usage.json') };
 }
 
 test('write then read round-trips', () => {
@@ -32,7 +32,7 @@ test('write then read round-trips', () => {
 test('the snapshot file is written 0600', () => {
   const env = tmpEnv('perm');
   writeSnapshot({ fiveHour: 1, sevenDay: 2, fiveHourResetAt: null, sevenDayResetAt: null }, { env });
-  const mode = fs.statSync(env.CLAUDE_USAGE_BAR_SNAPSHOT).mode & 0o777;
+  const mode = fs.statSync(env.AGENT_USAGE_BAR_SNAPSHOT).mode & 0o777;
   assert.equal(mode, 0o600);
 });
 
@@ -64,7 +64,7 @@ test('validateSnapshot rejects malformed / wrong-schema / empty', () => {
 
 test('a corrupt snapshot file reads back as null, not a throw', () => {
   const env = tmpEnv('corrupt');
-  fs.mkdirSync(path.dirname(env.CLAUDE_USAGE_BAR_SNAPSHOT), { recursive: true });
-  fs.writeFileSync(env.CLAUDE_USAGE_BAR_SNAPSHOT, '{ this is not json');
+  fs.mkdirSync(path.dirname(env.AGENT_USAGE_BAR_SNAPSHOT), { recursive: true });
+  fs.writeFileSync(env.AGENT_USAGE_BAR_SNAPSHOT, '{ this is not json');
   assert.equal(readSnapshot(env), null);
 });

@@ -5,18 +5,18 @@ import { readSnapshot } from '../src/snapshot.js';
 import { runDoctor } from '../src/doctor.js';
 import { snapshotPath } from '../src/constants.js';
 
-const HELP = `claude-usage-bar — Claude Code 5h + weekly usage in your macOS menu bar
+const HELP = `agent-usage-bar — Claude Code 5h + weekly usage in your macOS menu bar
 
 Usage:
-  claude-usage-bar hook [--quiet | --wrap "<cmd>"]   statusLine hook: writes the snapshot
-  claude-usage-bar render                            print SwiftBar/xbar menu-bar output
-  claude-usage-bar doctor                            check setup + health
-  claude-usage-bar path                              print the snapshot file path
-  claude-usage-bar --version                         print version
-  claude-usage-bar --help                            this help
+  agent-usage-bar hook [--quiet | --wrap "<cmd>"]   statusLine hook: writes the snapshot
+  agent-usage-bar render                            print SwiftBar/xbar menu-bar output
+  agent-usage-bar doctor                            check setup + health
+  agent-usage-bar path                              print the snapshot file path
+  agent-usage-bar --version                         print version
+  agent-usage-bar --help                            this help
 
 Setup (see README):
-  1. "statusLine": { "type": "command", "command": "claude-usage-bar hook" }  in ~/.claude/settings.json
+  1. "statusLine": { "type": "command", "command": "agent-usage-bar hook" }  in ~/.claude/settings.json
   2. brew install --cask swiftbar   (point it at plugins/)
 `;
 
@@ -63,6 +63,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  process.stderr.write(`claude-usage-bar: ${err?.message ?? err}\n`);
+  process.stderr.write(`agent-usage-bar: ${err?.message ?? err}\n`);
   process.exit(1);
 });

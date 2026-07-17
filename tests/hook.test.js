@@ -10,7 +10,7 @@ import { readSnapshot } from '../src/snapshot.js';
 /** @param {string} label */
 function tmpEnv(label) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `cub-${label}-`));
-  return { CLAUDE_USAGE_BAR_SNAPSHOT: path.join(dir, 'usage.json') };
+  return { AGENT_USAGE_BAR_SNAPSHOT: path.join(dir, 'usage.json') };
 }
 
 /**

@@ -43,19 +43,19 @@ test('color stays white regardless of level by default', () => {
 });
 
 test('opt-in alert color turns red only when critical', () => {
-  const env = { CLAUDE_USAGE_BAR_ALERT_COLOR: '1' };
+  const env = { AGENT_USAGE_BAR_ALERT_COLOR: '1' };
   assert.match(firstLine(renderSwiftBar(snap({ sevenDay: 85 }), { now: NOW, env })), new RegExp(COLORS.red));
   assert.match(firstLine(renderSwiftBar(snap({ sevenDay: 40 }), { now: NOW, env })), /color=white/);
 });
 
 test('bars style renders ASCII HP meters', () => {
-  const env = { CLAUDE_USAGE_BAR_STYLE: 'bars', CLAUDE_USAGE_BAR_SEGMENTS: '4' };
+  const env = { AGENT_USAGE_BAR_STYLE: 'bars', AGENT_USAGE_BAR_SEGMENTS: '4' };
   const bar = firstLine(renderSwiftBar(snap({ fiveHour: 50, sevenDay: 25 }), { now: NOW, env }));
   assert.match(bar, /^5H\[##--\] WK\[#---\]/);
 });
 
 test('custom font + size honored', () => {
-  const env = { CLAUDE_USAGE_BAR_FONT: 'Silkscreen', CLAUDE_USAGE_BAR_FONT_SIZE: '12' };
+  const env = { AGENT_USAGE_BAR_FONT: 'Silkscreen', AGENT_USAGE_BAR_FONT_SIZE: '12' };
   const bar = firstLine(renderSwiftBar(snap(), { now: NOW, env }));
   assert.match(bar, /font=Silkscreen/);
   assert.match(bar, /size=12/);
@@ -71,7 +71,7 @@ test('stack style emits a templateImage from the two rows', () => {
   };
   const out = renderSwiftBar(snap({ fiveHour: 7, sevenDay: 100 }), {
     now: NOW,
-    env: { CLAUDE_USAGE_BAR_STYLE: 'stack' },
+    env: { AGENT_USAGE_BAR_STYLE: 'stack' },
     buildImage,
   });
   assert.equal(firstLine(out), '| templateImage=FAKEB64');
@@ -81,7 +81,7 @@ test('stack style emits a templateImage from the two rows', () => {
 test('stack style falls back to text when the image cannot be built', () => {
   const out = renderSwiftBar(snap(), {
     now: NOW,
-    env: { CLAUDE_USAGE_BAR_STYLE: 'stack' },
+    env: { AGENT_USAGE_BAR_STYLE: 'stack' },
     buildImage: () => null,
   });
   assert.match(firstLine(out), /^5H9 WK22 \|/);

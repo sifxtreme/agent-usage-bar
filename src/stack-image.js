@@ -3,19 +3,19 @@ import { execFileSync } from 'node:child_process';
 const DEFAULT_FONT = '/System/Library/Fonts/Menlo.ttc';
 
 /**
- * ImageMagick binary (override with CLAUDE_USAGE_BAR_MAGICK).
+ * ImageMagick binary (override with AGENT_USAGE_BAR_MAGICK).
  * @param {NodeJS.ProcessEnv} env
  */
 function magickBin(env) {
-  return env.CLAUDE_USAGE_BAR_MAGICK?.trim() || 'magick';
+  return env.AGENT_USAGE_BAR_MAGICK?.trim() || 'magick';
 }
 
 /**
- * Font file for the stacked image (override with CLAUDE_USAGE_BAR_IMAGE_FONT).
+ * Font file for the stacked image (override with AGENT_USAGE_BAR_IMAGE_FONT).
  * @param {NodeJS.ProcessEnv} env
  */
 function imageFont(env) {
-  return env.CLAUDE_USAGE_BAR_IMAGE_FONT?.trim() || DEFAULT_FONT;
+  return env.AGENT_USAGE_BAR_IMAGE_FONT?.trim() || DEFAULT_FONT;
 }
 
 /**
