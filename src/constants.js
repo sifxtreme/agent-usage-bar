@@ -34,6 +34,26 @@ export function staleAfterMs(env = process.env) {
 /** Percentage thresholds for menu-bar coloring. */
 export const THRESHOLDS = { amber: 50, red: 80 };
 
+/**
+ * 16-bit / retro menu-bar styling. The pixel font sells the video-game look;
+ * ASCII-only content keeps every glyph inside the font (no fallback mismatch).
+ */
+export function menuFont(env = process.env) {
+  return env.CLAUDE_USAGE_BAR_FONT?.trim() || 'PressStart2P-Regular';
+}
+export function menuFontSize(env = process.env) {
+  const n = Number(env.CLAUDE_USAGE_BAR_FONT_SIZE);
+  return Number.isFinite(n) && n > 0 ? n : 10;
+}
+/** 'numbers' (default, compact) or 'bars' (ASCII HP-meter gauges). */
+export function menuStyle(env = process.env) {
+  return (env.CLAUDE_USAGE_BAR_STYLE?.trim() || 'numbers').toLowerCase();
+}
+export function barSegments(env = process.env) {
+  const n = Number(env.CLAUDE_USAGE_BAR_SEGMENTS);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 4;
+}
+
 /** Menu-bar colors (work on both light and dark menu bars). */
 export const COLORS = {
   green: '#3fb950',

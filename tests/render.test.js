@@ -21,37 +21,59 @@ function snap(over = {}) {
   };
 }
 
-test('renders a menu-bar line and a dropdown', () => {
-  const out = renderSwiftBar(snap(), { now: NOW });
+test('menu bar is compact, white, pixel-font by default', () => {
+  const out = renderSwiftBar(snap(), { now: NOW, env: {} });
   const bar = firstLine(out);
-  assert.match(bar, /^5h 9% · wk 22%/);
-  assert.match(bar, new RegExp(COLORS.green)); // worst=22 -> green
+  assert.match(bar, /^5H9 WK22 \|/);
+  assert.match(bar, /color=white/);
+  assert.match(bar, /font=PressStart2P-Regular/);
+  assert.match(bar, /size=10/);
+});
+
+test('dropdown keeps readable numbers + reset times', () => {
+  const out = renderSwiftBar(snap(), { now: NOW, env: {} });
   assert.ok(out.split('\n').includes('---'));
   assert.match(out, /5-hour session/);
   assert.match(out, /weekly \(all\)/);
   assert.match(out, /Refresh \| refresh=true/);
 });
 
-test('color escalates with the worse window', () => {
-  assert.match(firstLine(renderSwiftBar(snap({ sevenDay: 85 }), { now: NOW })), new RegExp(COLORS.red));
-  assert.match(firstLine(renderSwiftBar(snap({ sevenDay: 60 }), { now: NOW })), new RegExp(COLORS.amber));
+test('color stays white regardless of level by default', () => {
+  assert.match(firstLine(renderSwiftBar(snap({ sevenDay: 95 }), { now: NOW, env: {} })), /color=white/);
 });
 
-test('missing window shows an em dash', () => {
-  const out = renderSwiftBar(snap({ fiveHour: null }), { now: NOW });
-  assert.match(firstLine(out), /^5h — · wk 22%/);
+test('opt-in alert color turns red only when critical', () => {
+  const env = { CLAUDE_USAGE_BAR_ALERT_COLOR: '1' };
+  assert.match(firstLine(renderSwiftBar(snap({ sevenDay: 85 }), { now: NOW, env })), new RegExp(COLORS.red));
+  assert.match(firstLine(renderSwiftBar(snap({ sevenDay: 40 }), { now: NOW, env })), /color=white/);
 });
 
-test('stale snapshot is dimmed and annotated', () => {
-  const out = renderSwiftBar(snap(), { now: NOW + 5 * 60 * 60 * 1000 }); // 5h later > 3h default
-  const bar = firstLine(out);
-  assert.match(bar, new RegExp(COLORS.dim));
-  assert.match(bar, /◦/);
+test('bars style renders ASCII HP meters', () => {
+  const env = { CLAUDE_USAGE_BAR_STYLE: 'bars', CLAUDE_USAGE_BAR_SEGMENTS: '4' };
+  const bar = firstLine(renderSwiftBar(snap({ fiveHour: 50, sevenDay: 25 }), { now: NOW, env }));
+  assert.match(bar, /^5H\[##--\] WK\[#---\]/);
+});
+
+test('custom font + size honored', () => {
+  const env = { CLAUDE_USAGE_BAR_FONT: 'Silkscreen', CLAUDE_USAGE_BAR_FONT_SIZE: '12' };
+  const bar = firstLine(renderSwiftBar(snap(), { now: NOW, env }));
+  assert.match(bar, /font=Silkscreen/);
+  assert.match(bar, /size=12/);
+});
+
+test('missing window shows --', () => {
+  const out = renderSwiftBar(snap({ fiveHour: null }), { now: NOW, env: {} });
+  assert.match(firstLine(out), /^5H-- WK22 /);
+});
+
+test('stale snapshot is marked with * and annotated', () => {
+  const out = renderSwiftBar(snap(), { now: NOW + 5 * 60 * 60 * 1000, env: {} });
+  assert.match(firstLine(out), /\*/);
   assert.match(out, /Stale/);
 });
 
 test('null snapshot renders a helpful empty state', () => {
-  const out = renderSwiftBar(null, { now: NOW });
-  assert.match(firstLine(out), /^CC usage —/);
+  const out = renderSwiftBar(null, { now: NOW, env: {} });
+  assert.match(firstLine(out), /^5H-- WK--/);
   assert.match(out, /No usage snapshot yet/);
 });
