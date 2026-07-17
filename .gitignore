@@ -4,3 +4,6 @@ node_modules/
 # Local snapshot the tool writes at runtime (never commit usage data)
 usage.json
 *.snapshot.json
+
+# compiled native menu-bar binary
+bin-native/
