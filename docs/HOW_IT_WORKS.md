@@ -65,6 +65,18 @@ A reader just polls that one file — **no network, no credentials, no coupling 
 - **Native app** (`native/AgentUsageMenuBar.swift`, a single Swift file, ~200 lines, no runtime dependencies): an `NSStatusItem` that renders the two percentages as real two-line text, refreshes on a 60s timer and when you open the menu, and adapts its color to a light/dark menu bar. Runs via a LaunchAgent. `agent-usage-menubar --once` prints what it would show and exits.
 - **SwiftBar plugin** (`plugins/agent-usage.1h.sh`): calls `agent-usage-bar render`; refreshes hourly, on click, and via a menu item.
 
+## Codex, same idea, different drawer
+
+Codex writes the same kind of data, just somewhere else. Every time you run it, Codex logs a `rate_limits` event into the newest `~/.codex/sessions/.../rollout-*.jsonl`:
+
+```json
+"rate_limits": { "primary": { "used_percent": 14, "window_minutes": 10080, "resets_at": 1784859192 }, "secondary": null }
+```
+
+The reader finds the newest rollout, reads its last `rate_limits` event, and maps `window_minutes` to a column: 300 → 5-hour, 10080 → weekly. As of July 2026 OpenAI **removed the Codex 5-hour cap** (weekly only), so `primary` is the weekly window and `secondary` is null — which is why the `CX` row shows only a weekly number today. Because the mapping is by `window_minutes`, if the 5-hour window ever returns it just fills the empty column, no code change.
+
+Codex freshness is coarser than Claude's: it updates when you *run* Codex, not on a statusline heartbeat. It reads the rollout file directly (read-only), so there's no separate hook or snapshot for Codex.
+
 ## Freshness model
 
 The snapshot advances only when Claude Code renders its statusline (an event-driven, roughly-per-turn thing while you work). When no session is active the reader shows the last written value and marks it stale after 3h (`AGENT_USAGE_BAR_STALE_MINUTES`). Two cases make the last value lag until the next local render: a window **resetting** while you're away, and usage spent on **another device**. Both self-correct on the next render.

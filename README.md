@@ -1,16 +1,21 @@
 # agent-usage-bar
 
-Your Claude Code **5-hour** and **weekly** usage limits, stacked in the macOS menu bar.
+Your **Claude Code** and **Codex** usage limits, stacked in the macOS menu bar.
 
-<p align="center"><img src="docs/menubar.png" alt="5h and weekly usage stacked in the macOS menu bar" width="160"></p>
+<p align="center"><img src="docs/menubar.png" alt="Claude Code and Codex usage stacked in the macOS menu bar: CC 12% 28%, CX 14%" width="180"></p>
 
-Two crisp lines, always visible. No credentials, no network calls — it reads the usage data Claude Code already hands to its statusline. See [How it works](docs/HOW_IT_WORKS.md) for the full mechanism.
+Two rows, always visible: `CC` for Claude Code (5-hour + weekly), `CX` for Codex (weekly today; the 5-hour column fills in automatically if OpenAI brings that window back). No credentials, no network calls — it reads usage data both tools already write to disk. See [How it works](docs/HOW_IT_WORKS.md) for the full mechanism.
 
 ---
 
 ## How it works (30 seconds)
 
-Claude Code passes a JSON payload to its statusline command on every render; that payload includes a `rate_limits` block. A **hook** (registered as your statusline command) parses it and writes a small local **snapshot** file. A menu-bar **reader** displays the snapshot — a native Swift app (recommended) or a SwiftBar plugin.
+Both tools already know your usage and write it locally:
+
+- **Claude Code** hands a `rate_limits` block to its statusline on every render. A **hook** (registered as your statusline command) writes it to a small snapshot file.
+- **Codex** logs a `rate_limits` event into its newest `~/.codex/sessions/.../rollout-*.jsonl` every time you run it.
+
+A menu-bar **reader** — a native Swift app (recommended), or a SwiftBar plugin — reads both and shows them as two rows.
 
 ```
 Claude Code statusline ──▶ hook writes ~/.claude/usage-bar/usage.json ──▶ menu-bar reader
