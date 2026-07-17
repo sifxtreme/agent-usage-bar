@@ -27,7 +27,7 @@ test('menu bar is compact, white, plain monospace by default', () => {
   assert.match(bar, /^5H9 WK22 \|/);
   assert.match(bar, /color=white/);
   assert.match(bar, /font=Menlo/);
-  assert.match(bar, /size=13/);
+  assert.match(bar, /size=11/);
 });
 
 test('dropdown keeps readable numbers + reset times', () => {

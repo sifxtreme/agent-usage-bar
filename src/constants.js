@@ -44,7 +44,7 @@ export function menuFont(env = process.env) {
 }
 export function menuFontSize(env = process.env) {
   const n = Number(env.CLAUDE_USAGE_BAR_FONT_SIZE);
-  return Number.isFinite(n) && n > 0 ? n : 13;
+  return Number.isFinite(n) && n > 0 ? n : 11;
 }
 /** 'numbers' (default, compact) or 'bars' (ASCII HP-meter gauges). */
 export function menuStyle(env = process.env) {
