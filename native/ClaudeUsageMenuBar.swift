@@ -179,6 +179,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func quit() { NSApp.terminate(nil) }
 }
 
+// `--once`: print what the menu bar would show and exit (no status item).
+// Useful for `doctor`, scripting, and validating the reader without a GUI.
+if CommandLine.arguments.contains("--once") {
+    let u = readUsage()
+    print("5h \(pctText(u?.fiveHour))")
+    print("wk \(pctText(u?.sevenDay))")
+    if let u = u {
+        let stale = u.updatedAt.map { Date().timeIntervalSince($0) > Double(staleMinutes * 60) } ?? true
+        let note = "  5h resets \(resetText(u.fiveHourResetAt)) · wk resets \(resetText(u.sevenDayResetAt))"
+            + " · updated \(ageText(u.updatedAt))\(stale ? " · STALE" : "")\n"
+        FileHandle.standardError.write(note.data(using: .utf8)!)
+    } else {
+        FileHandle.standardError.write("  (no snapshot at \(snapshotURL().path))\n".data(using: .utf8)!)
+    }
+    exit(0)
+}
+
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory) // menu-bar only, no Dock icon
 let delegate = AppDelegate()
