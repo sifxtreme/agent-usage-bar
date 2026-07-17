@@ -35,15 +35,16 @@ export function staleAfterMs(env = process.env) {
 export const THRESHOLDS = { amber: 50, red: 80 };
 
 /**
- * 16-bit / retro menu-bar styling. The pixel font sells the video-game look;
- * ASCII-only content keeps every glyph inside the font (no fallback mismatch).
+ * Menu-bar font. Default is plain monospace (Menlo) at a normal size. Set
+ * CLAUDE_USAGE_BAR_FONT=PressStart2P-Regular (+ a small FONT_SIZE like 10) for
+ * the 16-bit pixel look. ASCII-only content keeps every glyph inside any font.
  */
 export function menuFont(env = process.env) {
-  return env.CLAUDE_USAGE_BAR_FONT?.trim() || 'PressStart2P-Regular';
+  return env.CLAUDE_USAGE_BAR_FONT?.trim() || 'Menlo';
 }
 export function menuFontSize(env = process.env) {
   const n = Number(env.CLAUDE_USAGE_BAR_FONT_SIZE);
-  return Number.isFinite(n) && n > 0 ? n : 10;
+  return Number.isFinite(n) && n > 0 ? n : 13;
 }
 /** 'numbers' (default, compact) or 'bars' (ASCII HP-meter gauges). */
 export function menuStyle(env = process.env) {

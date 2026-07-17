@@ -21,13 +21,13 @@ function snap(over = {}) {
   };
 }
 
-test('menu bar is compact, white, pixel-font by default', () => {
+test('menu bar is compact, white, plain monospace by default', () => {
   const out = renderSwiftBar(snap(), { now: NOW, env: {} });
   const bar = firstLine(out);
   assert.match(bar, /^5H9 WK22 \|/);
   assert.match(bar, /color=white/);
-  assert.match(bar, /font=PressStart2P-Regular/);
-  assert.match(bar, /size=10/);
+  assert.match(bar, /font=Menlo/);
+  assert.match(bar, /size=13/);
 });
 
 test('dropdown keeps readable numbers + reset times', () => {
