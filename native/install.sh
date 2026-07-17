@@ -10,8 +10,12 @@ PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 
 if [ "${1:-}" = "uninstall" ]; then
   launchctl unload "$PLIST" 2>/dev/null || true
-  rm -f "$PLIST"
-  echo "Removed $LABEL. (binary left at $BIN)"
+  rm -f "$PLIST" "$BIN"
+  echo "Removed the LaunchAgent and the compiled binary."
+  echo "Still present (remove by hand if you want them gone):"
+  echo "  - the statusLine hook in ~/.claude/settings.json"
+  echo "  - the CLI symlink from 'npm link'  (npm unlink -g claude-usage-bar)"
+  echo "  - the snapshot: $(node "$REPO/bin/claude-usage-bar.js" path 2>/dev/null || echo '~/.claude/usage-bar/usage.json')"
   exit 0
 fi
 

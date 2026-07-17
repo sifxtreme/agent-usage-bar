@@ -4,58 +4,62 @@ Your Claude Code **5-hour** and **weekly** usage limits, stacked in the macOS me
 
 <p align="center"><img src="docs/menubar.png" alt="5h and weekly usage stacked in the macOS menu bar" width="160"></p>
 
-Two crisp lines, always visible. No credentials, no undocumented APIs — it reads the **official** rate-limit data Claude Code already hands to its statusline.
+Two crisp lines, always visible. No credentials, no network calls — it reads the usage data Claude Code already hands to its statusline. See [How it works](docs/HOW_IT_WORKS.md) for the full mechanism.
 
 ---
 
-## How it works
+## How it works (30 seconds)
 
-Claude Code passes a JSON payload to its statusline command on every render, and that payload includes [`rate_limits.five_hour` and `rate_limits.seven_day`](https://code.claude.com/docs/en/statusline). The tool is two halves — a **writer** and a **reader** — joined by a local snapshot file:
+Claude Code passes a JSON payload to its statusline command on every render; that payload includes a `rate_limits` block. A **hook** (registered as your statusline command) parses it and writes a small local **snapshot** file. A menu-bar **reader** displays the snapshot — a native Swift app (recommended) or a SwiftBar plugin.
 
 ```
-┌─────────────┐  rate_limits   ┌──────────────┐   reads    ┌─────────────────────┐
-│ Claude Code  │ ─stdin JSON─▶ │  hook writes │ ─────────▶ │ native menu-bar app │
-│ statusline   │               │  a snapshot  │            │  (or SwiftBar)      │
-└─────────────┘               │  (~/.claude) │            └─────────────────────┘
-                               └──────────────┘
+Claude Code statusline ──▶ hook writes ~/.claude/usage-bar/usage.json ──▶ menu-bar reader
 ```
-
-- **`claude-usage-bar hook`** is your statusline command. It reads the payload and writes an atomic `0600` snapshot. No network call — the numbers are a free byproduct of Claude rendering its statusline.
-- A **reader** displays the snapshot. Two options ship here:
-  1. **Native menu-bar app** (recommended) — a ~150-line Swift `NSStatusItem` that shows the two percentages as real, crisp two-line text. No extra dependencies.
-  2. **SwiftBar plugin** — if you already run [SwiftBar](https://github.com/swiftbar/SwiftBar).
-
-**Why a snapshot instead of an API?** The usage numbers only reach your machine through the statusline payload — there's no public usage endpoint. Reading Claude Code's OAuth token to hit an internal endpoint would be fragile and is arguably scripted access under Anthropic's [Consumer Terms](https://www.anthropic.com/legal/consumer-terms). This tool avoids that. The tradeoff: the bar refreshes **while a Claude Code session is running**; otherwise it shows the last-known value (marked stale after 3h), which is fine — your usage isn't changing then anyway.
 
 ## Requirements
 
-- macOS, Node.js 18+ (you already have it — Claude Code needs it)
-- For the native app: the Swift toolchain (`swiftc`, included with Xcode Command Line Tools: `xcode-select --install`)
-- Claude Code recent enough to send `rate_limits` in the statusline payload (check with `claude-usage-bar doctor`)
+- macOS.
+- **Node.js 18+** — the hook/CLI (the writer) is a Node script. (This is separate from however you installed Claude Code itself.)
+- For the native app: the Swift toolchain (`swiftc`) — `xcode-select --install`.
+- A **Pro/Max** Claude account: `rate_limits` appears in the statusline payload for subscription accounts, and only after a session's first response.
 
 ## Install (native app — recommended)
 
 ```bash
 git clone https://github.com/asifahmed/claude-usage-bar
 cd claude-usage-bar
-npm link            # puts `claude-usage-bar` on your PATH (the writer)
-
-# 1) Point Claude Code's statusline at the hook — ~/.claude/settings.json:
-#    "statusLine": { "type": "command", "command": "claude-usage-bar hook --quiet" }
-#    (--quiet writes the snapshot without printing a line in your Claude UI)
-
-# 2) Build + install the native menu-bar app (compiles, adds a LaunchAgent):
-./native/install.sh
-
-# 3) Start a Claude Code session so the first snapshot is written.
-claude-usage-bar doctor    # verify everything is wired
+npm link                     # puts `claude-usage-bar` on your PATH (the writer)
+./native/install.sh          # compiles the app + installs a LaunchAgent (starts now + at login)
 ```
 
-Tune the vertical position with `CLAUDE_USAGE_BAR_TOP_PAD` (default `4.0`) in the LaunchAgent, or edit the constants at the top of `native/ClaudeUsageMenuBar.swift`. Remove it all with `./native/install.sh uninstall`.
+Then register the hook as your statusline. Edit `~/.claude/settings.json` and **merge** a `statusLine` key into the existing top-level object (here's a minimal complete file):
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "claude-usage-bar hook --quiet"
+  }
+}
+```
+
+`--quiet` writes the snapshot without printing anything, so your Claude UI is unchanged. **If you already have a statusline**, this replaces it — keep yours by wrapping it instead:
+
+```json
+"command": "claude-usage-bar hook --wrap 'your-existing-statusline-command'"
+```
+
+Finally, **send one prompt** in a Claude Code session (the first response is when usage first appears), then verify:
+
+```bash
+claude-usage-bar doctor
+```
+
+Look at the top-right of your menu bar — you should see the two stacked lines.
 
 ## Install (SwiftBar plugin — alternative)
 
-If you'd rather use SwiftBar, skip step 2 above and instead:
+Prefer [SwiftBar](https://github.com/swiftbar/SwiftBar)? Skip `./native/install.sh` and instead:
 
 ```bash
 brew install --cask swiftbar
@@ -64,30 +68,63 @@ defaults write com.ameba.SwiftBar PluginDirectory "$HOME/.swiftbar"
 open -a SwiftBar
 ```
 
-The plugin refreshes hourly, on click, and via a Refresh menu item — all reading the local snapshot (zero API calls). Its `stack` style needs [ImageMagick](https://imagemagick.org) (`brew install imagemagick`) to render two rows; without it, it falls back to a single line.
+Refreshes hourly, on click, and via a Refresh menu item — all reading the local snapshot. Its `stack` style needs [ImageMagick](https://imagemagick.org) (`brew install imagemagick`) to render two rows; without it, it falls back to a single line.
+
+## Troubleshooting — the bar shows `--` or nothing
+
+Run `claude-usage-bar doctor` first. Common causes:
+
+- **No first response yet** — start a session and send one prompt; `rate_limits` only appears after Claude responds.
+- **Account** — usage limits are reported for Pro/Max accounts, not API-key auth.
+- **Hook not wired** — `statusLine.command` in `~/.claude/settings.json` must call `claude-usage-bar hook`. Check the file is valid JSON.
+- **`claude-usage-bar` not on PATH** in Claude Code's environment — use an absolute command, e.g. `node /full/path/bin/claude-usage-bar.js hook --quiet`.
+- **Old Claude Code** — update it; older versions don't send `rate_limits`.
+- **Snapshot path mismatch** — the writer and reader must agree; `claude-usage-bar path` shows where it's read from.
+- **Stale** (`◦`/dim) — no session has rendered recently; expected when you're not using Claude.
+
+## macOS Gatekeeper
+
+`./native/install.sh` compiles the app **from source on your machine** — there's no downloaded, signed app bundle. A locally-built binary generally runs without prompts. If macOS ever blocks it, allow it under **System Settings → Privacy & Security → Open Anyway**.
+
+## LaunchAgent behavior
+
+`./native/install.sh` installs `~/Library/LaunchAgents/com.claude-usage-bar.menubar.plist`: it launches the app immediately and at each login, and relaunches it if it crashes. **Quit** from the menu lasts until your next login. The agent points at the compiled binary in your checkout — don't move the repo without re-running the installer.
 
 ## Configuration
 
-Environment variables (native app reads `SNAPSHOT`, `STALE_MINUTES`, `ALERT_COLOR`, `TOP_PAD`; the SwiftBar reader reads the rest):
-
 | Variable | Default | Meaning |
 |---|---|---|
-| `CLAUDE_USAGE_BAR_SNAPSHOT` | `~/.claude/usage-bar/usage.json` | Where the snapshot is stored |
+| `CLAUDE_USAGE_BAR_SNAPSHOT` | `~/.claude/usage-bar/usage.json` | Snapshot location (writer + reader must match) |
 | `CLAUDE_USAGE_BAR_STALE_MINUTES` | `180` | Age after which the reading is marked stale |
 | `CLAUDE_USAGE_BAR_TOP_PAD` | `4.0` | Native app: pixels of top padding for the two rows |
 | `CLAUDE_USAGE_BAR_ALERT_COLOR` | (off) | If set, text turns red when a limit hits 80% |
 | `CLAUDE_USAGE_BAR_STYLE` | `numbers` | SwiftBar reader: `numbers`, `bars`, or `stack` |
 | `CLAUDE_USAGE_BAR_COLOR` / `_FONT` / `_FONT_SIZE` | | SwiftBar reader text styling |
-| `CLAUDE_USAGE_BAR_BIN` | (auto) | Explicit CLI path for the SwiftBar plugin |
+
+**Where to set these:** a terminal `export` does **not** reach the native app (launched by `launchd`) or SwiftBar (launched by the login session). For the native app, add an `EnvironmentVariables` dict to the LaunchAgent plist (or just edit the constants at the top of `native/ClaudeUsageMenuBar.swift` and re-run the installer). The hook reads its variables from Claude Code's environment.
 
 ## Commands
 
 ```
 claude-usage-bar hook [--quiet | --wrap "<cmd>"]   statusLine hook (writes the snapshot)
-claude-usage-bar render                            SwiftBar/xbar output
 claude-usage-bar doctor                            check setup + health
 claude-usage-bar path                              print the snapshot path
+claude-usage-bar render                            SwiftBar/xbar output
+claude-usage-menubar --once                        print what the native bar would show
 ```
+
+## Uninstall
+
+```bash
+./native/install.sh uninstall     # removes the LaunchAgent + compiled binary
+npm unlink -g claude-usage-bar    # removes the CLI from PATH
+```
+
+Then remove the `statusLine` key from `~/.claude/settings.json`, and delete the snapshot (`rm "$(claude-usage-bar path)"`) if you want it gone. SwiftBar users: `rm ~/.swiftbar/claude-usage.1h.sh`.
+
+## Privacy
+
+The snapshot holds only two percentages and their reset timestamps — no prompts, transcripts, account identifiers, tokens, or credentials. It's created `0600` in a `0700` directory and never leaves your machine.
 
 ## Development
 

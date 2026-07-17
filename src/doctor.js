@@ -55,15 +55,19 @@ export function runDoctor(deps = {}) {
     log(`    5h=${snap.fiveHour ?? '—'}%  wk=${snap.sevenDay ?? '—'}%`);
   }
 
-  // 3) SwiftBar installed?
-  if (fs.existsSync('/Applications/SwiftBar.app')) {
+  // 3) A reader is installed — the native menu-bar app OR SwiftBar/xbar.
+  const nativeAgent = path.join(os.homedir(), 'Library/LaunchAgents/com.claude-usage-bar.menubar.plist');
+  if (fs.existsSync(nativeAgent)) {
+    log(`${OK} native menu-bar app installed (LaunchAgent present)`);
+  } else if (fs.existsSync('/Applications/SwiftBar.app')) {
     log(`${OK} SwiftBar is installed`);
   } else if (fs.existsSync('/Applications/xbar.app')) {
     log(`${OK} xbar is installed`);
   } else {
     problems++;
-    log(`${WARN} neither SwiftBar nor xbar found in /Applications`);
-    log('    brew install --cask swiftbar');
+    log(`${WARN} no reader installed`);
+    log('    native app:  ./native/install.sh');
+    log('    or SwiftBar:  brew install --cask swiftbar');
   }
 
   log(problems === 0 ? '\nAll good.' : `\n${problems} item(s) need attention.`);
