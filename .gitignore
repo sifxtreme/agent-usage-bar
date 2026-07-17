@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.DS_Store
+# Local snapshot the tool writes at runtime (never commit usage data)
+usage.json
+*.snapshot.json

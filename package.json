@@ -1,0 +1,43 @@
+{
+  "name": "claude-usage-bar",
+  "version": "0.1.0",
+  "description": "macOS menu-bar indicator for your Claude Code 5-hour and weekly usage limits. Reads the official statusline rate-limit payload — no credentials, no undocumented APIs.",
+  "type": "module",
+  "bin": {
+    "claude-usage-bar": "bin/claude-usage-bar.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "plugins/"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "typecheck": "tsc",
+    "check": "npm run typecheck && npm test"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "statusline",
+    "swiftbar",
+    "xbar",
+    "menubar",
+    "usage",
+    "rate-limit",
+    "macos"
+  ],
+  "author": "Asif Ahmed",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asifahmed/claude-usage-bar"
+  }
+}
