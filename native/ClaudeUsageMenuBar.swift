@@ -56,7 +56,8 @@ func readUsage() -> Usage? {
 
 // MARK: - Formatting
 
-func pctText(_ v: Int?) -> String { v.map { "\($0)%" } ?? "--" }
+// Zero-padded to 2 digits so the rows line up: 0 -> "00%", 9 -> "09%", 100 -> "100%".
+func pctText(_ v: Int?) -> String { v.map { String(format: "%02d%%", $0) } ?? "--%" }
 
 func resetText(_ d: Date?) -> String {
     guard let d = d else { return "?" }
@@ -131,7 +132,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let topPad = Double(ProcessInfo.processInfo.environment["CLAUDE_USAGE_BAR_TOP_PAD"] ?? "") ?? 4.0
 
         return NSAttributedString(string: text, attributes: [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .medium),
+            // Full monospace (SF Mono) so labels AND digits are fixed-width and the
+            // two rows align exactly. monospacedDigit only fixes the digits.
+            .font: NSFont.monospacedSystemFont(ofSize: 9, weight: .medium),
             .paragraphStyle: para,
             .foregroundColor: color,
             .baselineOffset: -topPad,
