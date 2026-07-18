@@ -79,6 +79,7 @@ Refreshes hourly, on click, and via a Refresh menu item — all reading the loca
 
 Run `agent-usage-bar doctor` first. Common causes:
 
+- **The bar vanished / you quit it** — `agent-usage-bar restart`. A deliberate Quit stays quit until next login (see [LaunchAgent behavior](#launchagent-behavior--and-getting-the-bar-back)); `restart` brings it straight back.
 - **No first response yet** — start a session and send one prompt; `rate_limits` only appears after Claude responds.
 - **Account** — usage limits are reported for Pro/Max accounts, not API-key auth.
 - **Hook not wired** — `statusLine.command` in `~/.claude/settings.json` must call `agent-usage-bar hook`. Check the file is valid JSON.
@@ -91,9 +92,18 @@ Run `agent-usage-bar doctor` first. Common causes:
 
 `./native/install.sh` compiles the app **from source on your machine** — there's no downloaded, signed app bundle. A locally-built binary generally runs without prompts. If macOS ever blocks it, allow it under **System Settings → Privacy & Security → Open Anyway**.
 
-## LaunchAgent behavior
+## LaunchAgent behavior — and getting the bar back
 
-`./native/install.sh` installs `~/Library/LaunchAgents/com.agent-usage-bar.menubar.plist`: it launches the app immediately and at each login, and relaunches it if it crashes. **Quit** from the menu lasts until your next login. The agent points at the compiled binary in your checkout — don't move the repo without re-running the installer.
+`./native/install.sh` installs `~/Library/LaunchAgents/com.agent-usage-bar.menubar.plist`: it launches the app immediately, again at each login, and relaunches it if it **crashes**.
+
+A deliberate **Quit** (the menu item or ⌘Q) is a *clean* exit, not a crash — so, by design, launchd leaves it stopped until your next login. If you quit it (on purpose or by accident) and want it back **now**:
+
+```bash
+agent-usage-bar restart      # (re)starts the menu-bar app immediately
+agent-usage-bar stop         # stops it until next login (scriptable Quit)
+```
+
+`agent-usage-bar doctor` reports whether the app is actually *running* (not just installed), so a missing bar is a one-line diagnosis. The agent points at the compiled binary in your checkout — don't move the repo without re-running the installer.
 
 ## Configuration
 
@@ -112,7 +122,9 @@ Run `agent-usage-bar doctor` first. Common causes:
 
 ```
 agent-usage-bar hook [--quiet | --wrap "<cmd>"]   statusLine hook (writes the snapshot)
-agent-usage-bar doctor                            check setup + health
+agent-usage-bar restart                           (re)start the menu-bar app (use if you quit it)
+agent-usage-bar stop                              stop the menu-bar app until next login
+agent-usage-bar doctor                            check setup + health (incl. is-it-running)
 agent-usage-bar path                              print the snapshot path
 agent-usage-bar render                            SwiftBar/xbar output
 agent-usage-menubar --once                        print what the native bar would show

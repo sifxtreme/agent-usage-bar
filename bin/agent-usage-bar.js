@@ -5,10 +5,12 @@ import { readSnapshot } from '../src/snapshot.js';
 import { runDoctor } from '../src/doctor.js';
 import { snapshotPath } from '../src/constants.js';
 
-const HELP = `agent-usage-bar — Claude Code 5h + weekly usage in your macOS menu bar
+const HELP = `agent-usage-bar — Claude Code + Codex usage in your macOS menu bar
 
 Usage:
   agent-usage-bar hook [--quiet | --wrap "<cmd>"]   statusLine hook: writes the snapshot
+  agent-usage-bar restart                           (re)start the menu-bar app — use if you quit it
+  agent-usage-bar stop                              stop the menu-bar app until next login
   agent-usage-bar render                            print SwiftBar/xbar menu-bar output
   agent-usage-bar doctor                            check setup + health
   agent-usage-bar path                              print the snapshot file path
@@ -17,7 +19,7 @@ Usage:
 
 Setup (see README):
   1. "statusLine": { "type": "command", "command": "agent-usage-bar hook" }  in ~/.claude/settings.json
-  2. brew install --cask swiftbar   (point it at plugins/)
+  2. ./native/install.sh   (native app, recommended)  — or  brew install --cask swiftbar
 `;
 
 async function main() {
@@ -31,6 +33,21 @@ async function main() {
     case 'render':
       process.stdout.write(renderSwiftBar(readSnapshot()) + '\n');
       return;
+
+    case 'restart':
+    case 'start': {
+      const { restartAgent } = await import('../src/launchctl.js');
+      const r = restartAgent();
+      process.stdout.write(`agent-usage-bar: ${r.message}\n`);
+      process.exit(r.ok ? 0 : 1);
+    }
+
+    case 'stop': {
+      const { stopAgent } = await import('../src/launchctl.js');
+      const r = stopAgent();
+      process.stdout.write(`agent-usage-bar: ${r.message}\n`);
+      process.exit(r.ok ? 0 : 1);
+    }
 
     case 'doctor':
       process.exit(runDoctor());
